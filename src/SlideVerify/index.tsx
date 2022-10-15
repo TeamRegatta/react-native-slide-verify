@@ -1,6 +1,6 @@
 'use strict'
 
-import React, { Component } from 'react'
+import { Component } from 'react'
 import PropTypes from 'prop-types'
 import {
   StyleSheet,
@@ -15,23 +15,24 @@ import {
 } from 'react-native'
 import Feather from 'react-native-vector-icons/Feather'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+//@ts-ignore
 import { CachedImage } from 'react-native-cached-image'
 import styles from './styles'
 
 // local puzzle
 const defaultPuzzle = {
-  puzzle: require('../images/puzzle.jpg'),
-  puzzlePiece: require('../images/puzzlePiece.png'),
+  puzzle: require('./images/puzzle.jpg'),
+  puzzlePiece: require('./images/puzzlePiece.png'),
   pieceOffsetX: 79,
   allowableOffsetError: 3
 }
 
 const generateSlidingStyles = (
-  iconName,
+  iconName:string,
   iconColor = 'white',
-  buttonColor,
+  buttonColor:string,
   borderColor = buttonColor,
-  indicatorColor
+  indicatorColor:string
 ) => ({
   icon: <Feather name={iconName} size={25} color={iconColor} />,
   buttonColor,
@@ -45,8 +46,32 @@ const slidingStyles = {
   VERIFY_PASS: generateSlidingStyles('check', undefined, '#52ccba', undefined, '#d2f4ef'),
   VERIFY_FAIL: generateSlidingStyles('x', undefined, '#f57a7a', undefined, '#fce1e1')
 }
+export  interface AppProps {
+  imageSize: any
+  useDefault: boolean
+  slideVerify: any
+  showRefresh: any
+  refresh: any
+  displayType: any
+  slideTips: string 
+  puzzle: any
+  puzzlePiece: any
+  onVerifyFailed: any
+  onVerifyPassed: any
 
-export default class SlideVerification extends Component {
+}
+export interface AppState{
+  puzzle: any
+  offsetXAnim: any
+    slideStatus: any
+    moving: boolean
+    verifying:boolean
+    result: any
+    lastResult: any
+
+}
+export default class SlideVerification extends Component<AppProps, AppState> {
+  panResponder: any  | undefined;
   static propTypes = {
     useDefault: PropTypes.bool,
     imageSize: PropTypes.shape({
@@ -84,7 +109,7 @@ export default class SlideVerification extends Component {
     },
     displayType: 'triggered',
     showRefresh: false,
-    slideTips: '向右滑动左侧箭头填充拼图',
+    slideTips: 'tips',
     puzzle: null,
     puzzlePiece: null,
     onVerifyPassed: () => {},
@@ -99,11 +124,14 @@ export default class SlideVerification extends Component {
     moving: false,
     verifying: false,
     result: null,
-    lastResult: null
+    lastResult: null,
+    puzzle: null,
+    puzzlePiece: null
   }
 
   componentWillMount() {
-    this.panResponder = PanResponder.create({
+    // TODO: check
+    this.panResponder =  PanResponder.create({
       // Ask to be the responder:
       onStartShouldSetPanResponder: this.hanldeShouldBeResponder,
       onStartShouldSetPanResponderCapture: this.hanldeShouldBeResponder,
@@ -133,7 +161,8 @@ export default class SlideVerification extends Component {
 
     return Animated.event([null, { dx: offsetXAnim }], {
       // limit sliding out of box
-      listener: (event, gestureState) => {
+      //@ts-ignore
+      listener: (event:any, gestureState:any) => {
         if (gestureState.dx < 0) {
           offsetXAnim.setValue(0)
         } else if (gestureState.dx > maxMoving) {
@@ -142,10 +171,10 @@ export default class SlideVerification extends Component {
       }
     })
   }
-
-  handlePanResponderRelease = async (event, gestureState) => {
+  
+  handlePanResponderRelease = async (event:any, gestureState:any) => {
     const offset = gestureState.dx
-
+    
     // handle local puzzle
     if (this.props.useDefault) {
       const { pieceOffsetX, allowableOffsetError } = defaultPuzzle
@@ -171,6 +200,7 @@ export default class SlideVerification extends Component {
   }
 
   handleVerifyPassed = () => {
+    
     const { useDefault, onVerifyPassed } = this.props
     this.setState({
       moving: false,
@@ -190,9 +220,10 @@ export default class SlideVerification extends Component {
     })
 
     useDefault && onVerifyFailed && onVerifyFailed()
-
+    
     Animated.timing(this.state.offsetXAnim, {
       toValue: 0,
+      useNativeDriver: true,
       delay: 500,
       easing: Easing.linear
     }).start(() => {
@@ -259,6 +290,7 @@ export default class SlideVerification extends Component {
           )}
           <Animated.View
             style={[
+              
               styles.absoluteFill,
               {
                 zIndex: 3,

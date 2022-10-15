@@ -1,19 +1,21 @@
 {
-  "name": "react-native-slide-verify",
-  "version": "0.0.2",
-  "description": "A pure JavaScript <SlideVerify> component for react-native",
-  "main": "lib/SlideVerify/index.js",
+  "name": "@vkorotenko/react-native-slide-verify",
+  "version": "0.0.3",
+  "description": "<SlideVerify> component with TypeScript support for react-native 0.70.0 and later",
+  "main": "./dist/index.js",
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "lib/",
-    "src/"
+    "dist/**/*"
   ],
-  "homepage": "https://github.com/Jancat/react-native-slide-verify",
+  "homepage": "https://github.com/vkorotenko/react-native-slide-verify",
   "repository": {
-    "url": "https://github.com/Jancat/react-native-slide-verify.git",
+    "url": "https://github.com/vkorotenko/react-native-slide-verify.git",
     "type": "git"
   },
-  "bugs": "https://github.com/Jancat/react-native-slide-verify/issues",
-  "author": "Jancat <510675621@qq.com> (https://github.com/Jancat)",
+  "bugs": "https://github.com/vkorotenko/react-native-slide-verify/issues",
+  "author": "Vladimir N. Korotenko <koroten@ya.ru> (https://github.com/vkorotenko/)",
   "license": "MIT",
   "private": false,
   "keywords": [
@@ -26,21 +28,30 @@
   "scripts": {
     "clean": "rimraf lib",
     "start": "node_modules/react-native/packager/packager.sh",
-    "build": "babel src --out-dir lib && cp -r src/images lib",
+    "build": "tsc && cp -r src/images dist",
+    "build-jenkins": "npm run build",
     "prepublish": "npm run clean && npm run build"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.18.6",
+    "@types/jest": "^29.1.2",
+    "@types/react": "^18.0.21",
+    "@types/react-native": "^0.70.4",
+    "@types/react-native-vector-icons": "^6.4.12",
+    "@types/react-test-renderer": "^18.0.0",
     "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.2.1",
-    "eslint": "^4.15.0",
-    "eslint-plugin-react": "^7.5.1",
-    "react": "^16.2.0",
-    "react-native": "^0.52.0",
-    "rimraf": "^2.6.2"
+    "babel-eslint": "^10.1.0",
+    "eslint": "^8.25.0",
+    "eslint-plugin-react": "^7.31.10",
+    "react": "^18.2.0",
+    "react-native": "^0.70.0",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.8.4"
   },
   "dependencies": {
     "prop-types": "^15.6.0",
     "react-native-cached-image": "^1.4.3",
-    "react-native-vector-icons": "^4.5.0"
+    "react-native-vector-icons": "^9.2.0",
+    "tslint": "^6.1.3"
   }
 }

@@ -47,5 +47,8 @@ export default StyleSheet.create({
     position: 'absolute',
     left: '30%',
     top: 13
+  },
+  absoluteFill: {
+    
   }
 })

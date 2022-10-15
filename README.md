@@ -4,19 +4,20 @@
 [![npm downloads](http://img.shields.io/npm/dm/react-native-slide-verify.svg?style=flat-square)](https://npmjs.org/package/react-native-slide-verify "View this project on npm")
 [![Platform](https://img.shields.io/badge/platform-ios%20%7C%20android-989898.svg?style=flat-square)](https://npmjs.org/package/react-native-slide-verify "View this project on npm")
 
-A pure JavaScript `<SlideVerify>` component for react-native. Drag the slider to fill the puzzle for verifying normal operation.
+ `<SlideVerify>` component for react-native 0.70.0 with TypeScript support. Drag the slider to fill the puzzle for verifying normal operation.
 
 <img src="https://github.com/Jancat/react-native-slide-verify/blob/master/Screenshots/sample.gif?raw=true">
 
 ## Installation
 ```shell
-yarn add react-native-slide-verify
+yarn add @vkorotenko/react-native-slide-verify
 ```
 > ensure to link react-native-vector-icons
-
+## Remarks 
+Local npm https://habr.com/ru/post/427069/
 ## Usage
 ```js
-import SlideVerify from 'react-native-slide-verify'
+import SlideVerify from '@vkorotenko/react-native-slide-verify'
 
 ...
 
