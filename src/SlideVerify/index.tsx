@@ -1,6 +1,4 @@
-'use strict'
-
-import { Component } from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import {
   StyleSheet,
@@ -11,25 +9,24 @@ import {
   Animated,
   TouchableOpacity,
   Easing,
-  ActivityIndicator
+  ActivityIndicator,
+  PanResponderInstance
 } from 'react-native'
 import Feather from 'react-native-vector-icons/Feather'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-//@ts-ignore
-import { CachedImage } from 'react-native-cached-image'
 import styles from './styles'
 
 // local puzzle
 const defaultPuzzle = {
-  puzzle: require('./images/puzzle.jpg'),
-  puzzlePiece: require('./images/puzzlePiece.png'),
+  puzzle: require('../images/puzzle.jpg'),
+  puzzlePiece: require('../images/puzzlePiece.png'),
   pieceOffsetX: 79,
   allowableOffsetError: 3
 }
 
 const generateSlidingStyles = (
-  iconName:string,
-  iconColor = 'white',
+  iconName: string,
+  iconColor:string = 'white',
   buttonColor:string,
   borderColor = buttonColor,
   indicatorColor:string
@@ -46,32 +43,75 @@ const slidingStyles = {
   VERIFY_PASS: generateSlidingStyles('check', undefined, '#52ccba', undefined, '#d2f4ef'),
   VERIFY_FAIL: generateSlidingStyles('x', undefined, '#f57a7a', undefined, '#fce1e1')
 }
-export  interface AppProps {
-  imageSize: any
+export type AppProps =  {
+  puzzleWidth?: string
+  imageSize?: ImageSize
   useDefault: boolean
-  slideVerify: any
-  showRefresh: any
-  refresh: any
-  displayType: any
-  slideTips: string 
-  puzzle: any
-  puzzlePiece: any
-  onVerifyFailed: any
-  onVerifyPassed: any
+  displayType?: string
+  showRefresh?: boolean
+  slideTips?: string
+  puzzle?: any
+  puzzlePiece?: any
+  onVerifyPassed?: () => {}
+  onVerifyFailed?: () => {}
+  slideVerify?: (offset: any) => {}
+  refresh?: () => {}
 
 }
-export interface AppState{
-  puzzle: any
-  offsetXAnim: any
-    slideStatus: any
-    moving: boolean
-    verifying:boolean
-    result: any
-    lastResult: any
+
+export type SliderStatus = {
+  icon: JSX.Element
+  buttonColor: string
+  borderColor: string
+  indicatorColor: string
+}
+export type AppState ={
+  puzzle:any 
+  puzzlePiece:any
+  verifying: boolean
+  moving : boolean
+
+  offsetXAnim: Animated.Value
+  slideStatus: SliderStatus
+  
+  result: boolean
+  lastResult: boolean
 
 }
-export default class SlideVerification extends Component<AppProps, AppState> {
-  panResponder: any  | undefined;
+export type ImageSize ={
+  puzzleWidth: number,
+  puzzleHeight: number,
+  puzzlePieceWidth: number
+}
+export default class SlideVerification extends Component<AppProps , AppState > {
+  static defaultProps = {
+    useDefault: false,
+    imageSize: {
+      puzzleWidth: 300,
+      puzzleHeight: 150,
+      puzzlePieceWidth: 50
+    },
+    displayType: 'triggered',
+    showRefresh: false,
+    slideTips: 'slide to match',
+    puzzle: {uri: defaultPuzzle.puzzle},
+    puzzlePiece: {uri: defaultPuzzle.puzzlePiece},
+    onVerifyPassed: () => {},
+    onVerifyFailed: () => {},
+    slideVerify: () => {},
+    refresh: () => {}
+  }
+
+  state = {
+    offsetXAnim: new Animated.Value(0),
+    slideStatus: slidingStyles.READY,
+    moving: false,
+    verifying: false,
+    result: null,
+    lastResult: null,
+    puzzle: {uri: defaultPuzzle.puzzle},
+    puzzlePiece: {uri: defaultPuzzle.puzzlePiece},
+  }
   static propTypes = {
     useDefault: PropTypes.bool,
     imageSize: PropTypes.shape({
@@ -100,81 +140,37 @@ export default class SlideVerification extends Component<AppProps, AppState> {
     refresh: PropTypes.func
   }
 
-  static defaultProps = {
-    useDefault: false,
-    imageSize: {
-      puzzleWidth: 300,
-      puzzleHeight: 150,
-      puzzlePieceWidth: 50
-    },
-    displayType: 'triggered',
-    showRefresh: false,
-    slideTips: 'tips',
-    puzzle: null,
-    puzzlePiece: null,
-    onVerifyPassed: () => {},
-    onVerifyFailed: () => {},
-    slideVerify: () => {},
-    refresh: () => {}
-  }
-
-  state = {
-    offsetXAnim: new Animated.Value(0),
-    slideStatus: slidingStyles.READY,
-    moving: false,
-    verifying: false,
-    result: null,
-    lastResult: null,
-    puzzle: null,
-    puzzlePiece: null
-  }
-
-  componentWillMount() {
-    // TODO: check
-    this.panResponder =  PanResponder.create({
-      // Ask to be the responder:
-      onStartShouldSetPanResponder: this.hanldeShouldBeResponder,
-      onStartShouldSetPanResponderCapture: this.hanldeShouldBeResponder,
-      onMoveShouldSetPanResponder: this.hanldeShouldBeResponder,
-      onMoveShouldSetPanResponderCapture: this.hanldeShouldBeResponder,
-
-      onPanResponderGrant: this.handlePanResponderGrant, // begin sliding
-      onPanResponderMove: this.handlePanResponderMove(), // sliding
-      onPanResponderRelease: this.handlePanResponderRelease // slide end
-    })
-  }
-
   hanldeShouldBeResponder = () => this.state.lastResult !== true && !this.state.moving
-
   handlePanResponderGrant = () =>
     this.setState({
       moving: true,
       result: null,
       slideStatus: slidingStyles.MOVING
     })
-
+ 
   // bind accumulated distance to offsetAnim.x
   handlePanResponderMove = () => {
     const { offsetXAnim } = this.state
-    const { imageSize: { puzzleWidth, puzzlePieceWidth } } = this.props
+    const { puzzleWidth, puzzlePieceWidth  } =  this.props.imageSize as ImageSize 
     const maxMoving = puzzleWidth - puzzlePieceWidth
 
-    return Animated.event([null, { dx: offsetXAnim }], {
+    return Animated.event([null, { dx: offsetXAnim },],    {
       // limit sliding out of box
       //@ts-ignore
-      listener: (event:any, gestureState:any) => {
+      listener: (e:any, gestureState:{dx: number}) => {
         if (gestureState.dx < 0) {
           offsetXAnim.setValue(0)
         } else if (gestureState.dx > maxMoving) {
           offsetXAnim.setValue(maxMoving)
         }
-      }
+      },
+      useNativeDriver: true
     })
   }
-  
+
   handlePanResponderRelease = async (event:any, gestureState:any) => {
     const offset = gestureState.dx
-    
+
     // handle local puzzle
     if (this.props.useDefault) {
       const { pieceOffsetX, allowableOffsetError } = defaultPuzzle
@@ -200,7 +196,6 @@ export default class SlideVerification extends Component<AppProps, AppState> {
   }
 
   handleVerifyPassed = () => {
-    
     const { useDefault, onVerifyPassed } = this.props
     this.setState({
       moving: false,
@@ -220,11 +215,11 @@ export default class SlideVerification extends Component<AppProps, AppState> {
     })
 
     useDefault && onVerifyFailed && onVerifyFailed()
-    
+
     Animated.timing(this.state.offsetXAnim, {
       toValue: 0,
-      useNativeDriver: true,
       delay: 500,
+      useNativeDriver: true,
       easing: Easing.linear
     }).start(() => {
       // back to initial status
@@ -237,16 +232,36 @@ export default class SlideVerification extends Component<AppProps, AppState> {
     })
   }
 
+  panResponder: PanResponderInstance = PanResponder.create({
+    // Ask to be the responder:
+    onStartShouldSetPanResponder: this.hanldeShouldBeResponder,
+    onStartShouldSetPanResponderCapture: this.hanldeShouldBeResponder,
+    onMoveShouldSetPanResponder: this.hanldeShouldBeResponder,
+    onMoveShouldSetPanResponderCapture: this.hanldeShouldBeResponder,
+
+    onPanResponderGrant: this.handlePanResponderGrant, // begin sliding
+    onPanResponderMove: this.handlePanResponderMove(), // sliding
+    onPanResponderRelease: this.handlePanResponderRelease // slide end
+  });
+
+  
+
+  
+
+  
+
+  
+
   render() {
+    
     const {
       useDefault,
-      imageSize: { puzzleWidth, puzzleHeight, puzzlePieceWidth },
       showRefresh,
       refresh,
       displayType,
       slideTips
-    } = this.props
-
+    } =     this.props
+    const { puzzleWidth, puzzleHeight, puzzlePieceWidth } = this.props.imageSize as ImageSize
     let puzzle
     let puzzlePiece
 
@@ -256,6 +271,7 @@ export default class SlideVerification extends Component<AppProps, AppState> {
     } else {
       ({ puzzle, puzzlePiece } = this.props)
     }
+    // console.log(puzzle)
 
     const {
       slideStatus, moving, verifying, result, lastResult, offsetXAnim
@@ -282,7 +298,7 @@ export default class SlideVerification extends Component<AppProps, AppState> {
               resizeMode="cover"
             />
           ) : (
-            <CachedImage
+            <Image
               source={puzzle}
               style={[StyleSheet.absoluteFill, { zIndex: 2 }, styles.image]}
               resizeMode="cover"
@@ -290,7 +306,6 @@ export default class SlideVerification extends Component<AppProps, AppState> {
           )}
           <Animated.View
             style={[
-              
               styles.absoluteFill,
               {
                 zIndex: 3,
@@ -309,7 +324,7 @@ export default class SlideVerification extends Component<AppProps, AppState> {
                 resizeMode="cover"
               />
             ) : (
-              <CachedImage
+              <Image
                 source={puzzlePiece}
                 style={{ width: puzzlePieceWidth, height: puzzleHeight }}
                 resizeMode="cover"
@@ -350,7 +365,8 @@ export default class SlideVerification extends Component<AppProps, AppState> {
                 transform: [{ translateX: offsetXAnim }, { perspective: 1000 }]
               }
             ]}
-            {...this.panResponder.panHandlers}
+           
+            {...this.panResponder?.panHandlers}
           >
             {verifying ? <ActivityIndicator color="white" /> : slideStatus.icon}
           </Animated.View>
@@ -359,4 +375,6 @@ export default class SlideVerification extends Component<AppProps, AppState> {
       </View>
     )
   }
+  
+  
 }
