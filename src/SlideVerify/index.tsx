@@ -107,8 +107,8 @@ export default class SlideVerification extends Component<AppProps , AppState > {
     slideStatus: slidingStyles.READY,
     moving: false,
     verifying: false,
-    result: null,
-    lastResult: null,
+    result: false,
+    lastResult: false,
     puzzle: {uri: defaultPuzzle.puzzle},
     puzzlePiece: {uri: defaultPuzzle.puzzlePiece},
   }
@@ -144,7 +144,7 @@ export default class SlideVerification extends Component<AppProps , AppState > {
   handlePanResponderGrant = () =>
     this.setState({
       moving: true,
-      result: null,
+      result: true,
       slideStatus: slidingStyles.MOVING
     })
  
@@ -226,7 +226,7 @@ export default class SlideVerification extends Component<AppProps , AppState > {
       this.setState({
         slideStatus: slidingStyles.READY,
         moving: false,
-        result: null,
+        result: false,
         lastResult: false
       })
     })
