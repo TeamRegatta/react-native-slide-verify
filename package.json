@@ -1,8 +1,8 @@
 {
   "name": "@vkorotenko/react-native-slide-verify",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "<SlideVerify> component with TypeScript support for react-native 0.70.0 and later",
-  "main": "./dist/index.js",
+  "main": "./dist/SlideVerify/index.js",
   "type": "module",
   "module": "./dist/SlideVerify/index.js",
   "types": "./dist/SlideVerify/index.d.ts",
