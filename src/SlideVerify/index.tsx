@@ -16,13 +16,22 @@ import Feather from 'react-native-vector-icons/Feather'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import styles from './styles'
 
+interface defPuzle{
+  puzzle: number| {uri: string},
+  puzzlePiece: number| {uri: string},
+  pieceOffsetX: number,
+  allowableOffsetError: number
+}
+
+
 // local puzzle
-const defaultPuzzle = {
+const defaultPuzzle: defPuzle = {
   puzzle: require('../images/puzzle.jpg'),
   puzzlePiece: require('../images/puzzlePiece.png'),
   pieceOffsetX: 79,
-  allowableOffsetError: 3
-}
+  allowableOffsetError: 3,
+
+} 
 
 const generateSlidingStyles = (
   iconName: string,
@@ -50,8 +59,8 @@ export type AppProps =  {
   displayType?: string
   showRefresh?: boolean
   slideTips?: string
-  puzzle?: any
-  puzzlePiece?: any
+  puzzle: number | {uri: string} 
+  puzzlePiece: number | {uri: string}
   onVerifyPassed?: () => {}
   onVerifyFailed?: () => {}
   slideVerify?: (offset: any) => {}
@@ -66,14 +75,12 @@ export type SliderStatus = {
   indicatorColor: string
 }
 export type AppState ={
-  puzzle:any 
-  puzzlePiece:any
+  puzzle: number | {uri: string} 
+  puzzlePiece: number | {uri: string}
   verifying: boolean
   moving : boolean
-
   offsetXAnim: Animated.Value
   slideStatus: SliderStatus
-  
   result: boolean
   lastResult: boolean
 
@@ -84,7 +91,7 @@ export type ImageSize ={
   puzzlePieceWidth: number
 }
 export default class SlideVerification extends Component<AppProps , AppState > {
-  static defaultProps = {
+  static defaultProps:AppProps = {
     useDefault: false,
     imageSize: {
       puzzleWidth: 300,
@@ -94,11 +101,15 @@ export default class SlideVerification extends Component<AppProps , AppState > {
     displayType: 'triggered',
     showRefresh: false,
     slideTips: 'slide to match',
-    puzzle: {uri: defaultPuzzle.puzzle},
-    puzzlePiece: {uri: defaultPuzzle.puzzlePiece},
-    onVerifyPassed: () => {},
+    puzzle: defaultPuzzle.puzzle,
+    puzzlePiece:  defaultPuzzle.puzzlePiece,
+    //@ts-ignore
+    onVerifyPassed: ()=> { },
+    //@ts-ignore
     onVerifyFailed: () => {},
+    //@ts-ignore
     slideVerify: () => {},
+    //@ts-ignore
     refresh: () => {}
   }
 
@@ -109,8 +120,8 @@ export default class SlideVerification extends Component<AppProps , AppState > {
     verifying: false,
     result: false,
     lastResult: false,
-    puzzle: {uri: defaultPuzzle.puzzle},
-    puzzlePiece: {uri: defaultPuzzle.puzzlePiece},
+    puzzle:  defaultPuzzle.puzzle,
+    puzzlePiece: defaultPuzzle.puzzlePiece,
   }
   static propTypes = {
     useDefault: PropTypes.bool,
@@ -122,18 +133,9 @@ export default class SlideVerification extends Component<AppProps , AppState > {
     displayType: PropTypes.string,
     slideTips: PropTypes.string,
     showRefresh: PropTypes.bool,
-    puzzle: PropTypes.oneOfType([
-      PropTypes.shape({
-        uri: PropTypes.string
-      }),
-      PropTypes.number
-    ]),
-    puzzlePiece: PropTypes.oneOfType([
-      PropTypes.shape({
-        uri: PropTypes.string
-      }),
-      PropTypes.number
-    ]),
+    
+    puzzle: PropTypes.any,
+    puzzlePiece: PropTypes.any,
     onVerifyPassed: PropTypes.func,
     onVerifyFailed: PropTypes.func,
     slideVerify: PropTypes.func,
@@ -164,7 +166,7 @@ export default class SlideVerification extends Component<AppProps , AppState > {
           offsetXAnim.setValue(maxMoving)
         }
       },
-      useNativeDriver: true
+      useNativeDriver: false
     })
   }
 
@@ -219,7 +221,7 @@ export default class SlideVerification extends Component<AppProps , AppState > {
     Animated.timing(this.state.offsetXAnim, {
       toValue: 0,
       delay: 500,
-      useNativeDriver: true,
+      useNativeDriver: false,
       easing: Easing.linear
     }).start(() => {
       // back to initial status

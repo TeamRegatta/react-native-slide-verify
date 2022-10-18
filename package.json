@@ -1,6 +1,6 @@
 {
   "name": "@vkorotenko/react-native-slide-verify",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "<SlideVerify> component with TypeScript support for react-native 0.70.0 and later",
   "main": "./dist/SlideVerify/index.js",
   "type": "module",
@@ -43,15 +43,15 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^8.25.0",
     "eslint-plugin-react": "^7.31.10",
-    "react": "^18.2.0",
-    "react-native": "^0.70.0",
+   
     "rimraf": "^3.0.2",
-    "typescript": "^4.8.4"
-  },
-  "dependencies": {
-    "prop-types": "^15.6.0",
-    "react-native-cached-image": "^1.4.3",
-    "react-native-vector-icons": "^9.2.0",
+    "typescript": "^4.8.4",
     "tslint": "^6.1.3"
+  },
+  "peerDependencies": {
+    "react": "18.1.0",
+    "react-native": "0.70.0",
+    "prop-types": "^15.6.0",
+    "react-native-vector-icons": "^9.2.0"
   }
 }
